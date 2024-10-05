@@ -32,6 +32,21 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="AVLTree.cpp" />
+		<Unit filename="AVLTree.h" />
+		<Unit filename="Array.cpp" />
+		<Unit filename="Array.h" />
+		<Unit filename="DList.cpp" />
+		<Unit filename="DList.h" />
+		<Unit filename="HahTable.cpp" />
+		<Unit filename="HashTable.h" />
+		<Unit filename="OList.cpp" />
+		<Unit filename="OList.h" />
+		<Unit filename="Queue.cpp" />
+		<Unit filename="Queue.h" />
+		<Unit filename="Stack.cpp" />
+		<Unit filename="Stack.h" />
+		<Unit filename="libs.h" />
 		<Unit filename="main.cpp" />
 		<Extensions />
 	</Project>

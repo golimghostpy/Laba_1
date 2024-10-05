@@ -1,0 +1,74 @@
+# depslib dependency file v1.0
+1728126712 source:/home/golimghost/Desktop/CProj/Laba_1/Array.cpp
+	"Array.h"
+
+1728127331 source:/home/golimghost/Desktop/CProj/Laba_1/HahTable.cpp
+	"HashTable.h"
+
+1728121780 source:/home/golimghost/Desktop/CProj/Laba_1/Queue.cpp
+	"Queue.h"
+
+1728134176 source:/home/golimghost/Desktop/CProj/Laba_1/Stack.cpp
+	"Stack.h"
+
+1728104591 source:/home/golimghost/Desktop/CProj/Laba_1/TList.cpp
+	"TList.h"
+
+1728133786 source:/home/golimghost/Desktop/CProj/Laba_1/main.cpp
+	"libs.h"
+	"OList.h"
+	"DList.h"
+	"Stack.h"
+	"Queue.h"
+	"HashTable.h"
+	"Array.h"
+	"AVLTree.h"
+	<getopt.h>
+
+1728127163 /home/golimghost/Desktop/CProj/Laba_1/libs.h
+	<iostream>
+	<fstream>
+
+1728127158 /home/golimghost/Desktop/CProj/Laba_1/OList.h
+	"libs.h"
+
+1728104533 /home/golimghost/Desktop/CProj/Laba_1/TList.h
+	"libs.h"
+
+1728121085 /home/golimghost/Desktop/CProj/Laba_1/Stack.h
+	"libs.h"
+	"OList.h"
+
+1728121872 /home/golimghost/Desktop/CProj/Laba_1/Queue.h
+	"libs.h"
+	"OList.h"
+
+1728130145 /home/golimghost/Desktop/CProj/Laba_1/HashTable.h
+	"libs.h"
+	"OList.h"
+
+1728126658 /home/golimghost/Desktop/CProj/Laba_1/Array.h
+	"libs.h"
+	"OList.h"
+
+1728127232 source:/home/golimghost/Desktop/CProj/Laba_1/OList.cpp
+	"OList.h"
+
+1728131494 source:/home/golimghost/Desktop/CProj/Laba_1/AVLTree.cpp
+	"AVLTree.h"
+
+1728130476 /home/golimghost/Desktop/CProj/Laba_1/AVLTree.h
+	"libs.h"
+	"OList.h"
+
+1728121552 source:/home/golimghost/Desktop/CProj/Laba_1/DList.cpp
+	"DList.h"
+
+1728121671 /home/golimghost/Desktop/CProj/Laba_1/DList.h
+	"libs.h"
+	"OList.h"
+
+1728126947 /home/golimghost/Desktop/CProj/Laba_1/splitjoin.h
+	"OList.h"
+	"libs.h"
+
