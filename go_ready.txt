@@ -1,0 +1,1174 @@
+package main
+
+import (
+	"bufio"
+	"errors"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+)
+
+type ONode struct {
+	data string
+	next *ONode
+}
+
+type OList struct {
+	size int
+	first *ONode
+	last  *ONode
+}
+
+func (ol *OList) isEmpty() bool {
+	return ol.first == nil
+}
+
+func (ol *OList) pushFront(value string) {
+	newElem := &ONode{data: value}
+	if ol.isEmpty() {
+		ol.first = newElem
+		ol.last = newElem
+	} else {
+		newElem.next = ol.first
+		ol.first = newElem
+	}
+	ol.size++
+}
+
+func (ol *OList) pushBack(value string) {
+	newElem := &ONode{data: value}
+	if ol.isEmpty() {
+		ol.first = newElem
+		ol.last = newElem
+	} else {
+		ol.last.next = newElem
+		ol.last = newElem
+	}
+	ol.size++
+}
+
+func (ol *OList) deleteFront() {
+	if ol.isEmpty() {
+		fmt.Println("List is empty")
+		return
+	}
+	ol.first = ol.first.next
+	ol.size--
+}
+
+func (ol *OList) deleteBack() {
+	if ol.isEmpty() {
+		fmt.Println("List is empty")
+		return
+	}
+	if ol.first == ol.last {
+		ol.first = nil
+		ol.last = nil
+	} else {
+		curr := ol.first
+		for curr.next != ol.last {
+			curr = curr.next
+		}
+		curr.next = nil
+		ol.last = curr
+	}
+	ol.size--
+}
+
+func (ol *OList) deleteValue(value string) {
+	if ol.isEmpty() {
+		fmt.Println("No such a value")
+		return
+	}
+	if ol.first.data == value {
+		ol.deleteFront()
+		return
+	}
+	curr := ol.first
+	prev := (*ONode)(nil)
+	for curr != nil && curr.data != value {
+		prev = curr
+		curr = curr.next
+	}
+	if curr == nil {
+		fmt.Println("No such a value")
+		return
+	}
+	if curr == ol.last {
+		ol.deleteBack()
+		return
+	}
+	prev.next = curr.next
+	ol.size--
+}
+
+func (ol *OList) findValue(value string) int {
+	curr := ol.first
+	index := 0
+	for curr != nil && curr.data != value {
+		curr = curr.next
+		index++
+	}
+	if curr == nil {
+		return -1
+	}
+	return index
+}
+
+func (ol *OList) print(delimiter string) {
+	if ol.isEmpty() {
+		fmt.Println()
+		return
+	}
+	curr := ol.first
+	for curr.next != nil {
+		fmt.Print(curr.data + delimiter)
+		curr = curr.next
+	}
+	fmt.Println(curr.data)
+}
+
+func (ol *OList) findAt(index int) *ONode {
+	counter := 0
+	current := ol.first
+	for counter < index {
+		current = current.next
+		counter++
+	}
+	return current
+}
+
+func (ol *OList) join(symbol string) string {
+	var joined strings.Builder
+	current := ol.first
+	for current != nil {
+		joined.WriteString(current.data + symbol)
+		current = current.next
+	}
+	return joined.String()
+}
+
+func olistDo(path string, query OList) {
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	toWork := OList{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		toWork.pushBack(scanner.Text())
+	}
+
+	token := query.findAt(0).data
+	item := ""
+	if query.size == 2 {
+		item = query.findAt(1).data
+	}
+
+	switch token {
+	case "OLPUSHF":
+		if item == "" {
+			fmt.Println("Can't push empty string")
+			return
+		}
+		toWork.pushFront(item)
+	case "OLPUSHB":
+		if item == "" {
+			fmt.Println("Can't push empty string")
+			return
+		}
+		toWork.pushBack(item)
+	case "OLDELF":
+		toWork.deleteFront()
+	case "OLDELB":
+		toWork.deleteBack()
+	case "OLDELVAL":
+		if item == "" {
+			fmt.Println("Can't delete empty string")
+			return
+		}
+		toWork.deleteValue(item)
+	case "OLFIND":
+		if item == "" {
+			fmt.Println("Can't find empty string")
+			return
+		}
+		index := toWork.findValue(item)
+		if index == -1 {
+			fmt.Println("This element isn't in list")
+		} else {
+			fmt.Println("Index of element =", index)
+		}
+	case "OLPRINT":
+		toWork.print(" ")
+	default:
+		fmt.Println("No such a command")
+	}
+
+	writeFile, err := os.Create(path)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer writeFile.Close()
+
+	for curr := toWork.first; curr != nil; curr = curr.next {
+		fmt.Fprintln(writeFile, curr.data)
+	}
+}
+
+func split(str, delimiter string) OList {
+	result := OList{}
+	parts := strings.Split(str, delimiter)
+	for _, part := range parts {
+		result.pushBack(part)
+	}
+	return result
+}
+
+type TNode struct {
+	data string
+	next *TNode
+	prev *TNode
+}
+
+type TList struct {
+	size int
+	first *TNode
+	last  *TNode
+}
+
+func (tl *TList) isEmpty() bool {
+	return tl.first == nil
+}
+
+func (tl *TList) pushFront(value string) {
+	newElem := &TNode{data: value}
+	if tl.isEmpty() {
+		tl.first = newElem
+		tl.last = newElem
+	} else {
+		newElem.next = tl.first
+		tl.first.prev = newElem
+		tl.first = newElem
+	}
+	tl.size++
+}
+
+func (tl *TList) pushBack(value string) {
+	newElem := &TNode{data: value}
+	if tl.isEmpty() {
+		tl.first = newElem
+		tl.last = newElem
+	} else {
+		tl.last.next = newElem
+		newElem.prev = tl.last
+		tl.last = newElem
+	}
+	tl.size++
+}
+
+func (tl *TList) deleteFront() {
+	if tl.isEmpty() {
+		fmt.Println("List is empty")
+		return
+	}
+	tl.first = tl.first.next
+	if tl.first != nil {
+		tl.first.prev = nil
+	}
+	tl.size--
+}
+
+func (tl *TList) deleteBack() {
+	if tl.isEmpty() {
+		fmt.Println("List is empty")
+		return
+	}
+	tl.last = tl.last.prev
+	if tl.last != nil {
+		tl.last.next = nil
+	}
+	tl.size--
+}
+
+func (tl *TList) deleteValue(value string) {
+	if tl.isEmpty() {
+		fmt.Println("No such a value")
+		return
+	}
+	if tl.first.data == value {
+		tl.deleteFront()
+		return
+	}
+	curr := tl.first
+	for curr != nil && curr.data != value {
+		curr = curr.next
+	}
+	if curr == nil {
+		fmt.Println("No such a value")
+		return
+	}
+	if curr == tl.last {
+		tl.deleteBack()
+		return
+	}
+	curr.prev.next = curr.next
+	if curr.next != nil {
+		curr.next.prev = curr.prev
+	}
+	tl.size--
+}
+
+func (tl *TList) findValue(value string) int {
+	curr := tl.first
+	index := 0
+	for curr != nil && curr.data != value {
+		curr = curr.next
+		index++
+	}
+	if curr == nil {
+		return -1
+	}
+	return index
+}
+
+func (tl *TList) print(delimiter string) {
+	if tl.isEmpty() {
+		fmt.Println()
+		return
+	}
+	curr := tl.first
+	for curr.next != nil {
+		fmt.Print(curr.data + delimiter)
+		curr = curr.next
+	}
+	fmt.Println(curr.data)
+}
+
+func tlistDo(path string, query OList) {
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	toWork := TList{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		toWork.pushBack(scanner.Text())
+	}
+
+	token := query.findAt(0).data
+	item := ""
+	if query.size == 2 {
+		item = query.findAt(1).data
+	}
+
+	switch token {
+	case "DLPUSHF":
+		toWork.pushFront(item)
+	case "DLPUSHB":
+		toWork.pushBack(item)
+	case "DLDELF":
+		toWork.deleteFront()
+	case "DLDELB":
+		toWork.deleteBack()
+	case "DLDELVAL":
+		toWork.deleteValue(item)
+	case "DLFIND":
+		index := toWork.findValue(item)
+		if index == -1 {
+			fmt.Println("This element isn't in list")
+		} else {
+			fmt.Println("Index of element =", index)
+		}
+	case "DLPRINT":
+		toWork.print(" ")
+	default:
+		fmt.Println("No such a command")
+	}
+
+	writeFile, err := os.Create(path)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer writeFile.Close()
+
+	for curr := toWork.first; curr != nil; curr = curr.next {
+		fmt.Fprintln(writeFile, curr.data)
+	}
+}
+
+type Stack struct {
+	head *ONode
+	tail *ONode
+}
+
+func (s *Stack) isEmpty() bool {
+	return s.head == nil
+}
+
+func (s *Stack) push(value string) {
+	newElem := &ONode{data: value}
+	if s.isEmpty() {
+		s.head = newElem
+		s.tail = newElem
+	} else {
+		newElem.next = s.head
+		s.head = newElem
+	}
+}
+
+func (s *Stack) pop() {
+	if s.isEmpty() {
+		fmt.Println("Stack is empty")
+		return
+	}
+	fmt.Println("Popped value:", s.head.data)
+	s.head = s.head.next
+}
+
+func (s *Stack) print() {
+	if s.head == nil {
+		return
+	}
+	curr := s.head
+	for curr != s.tail {
+		fmt.Print(curr.data, "->")
+		curr = curr.next
+	}
+	fmt.Println(curr.data)
+}
+
+func stackDo(path string, query OList) {
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	toWork := Stack{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		toWork.push(scanner.Text())
+	}
+
+	token := query.findAt(0).data
+	item := ""
+	if query.size == 2 {
+		item = query.findAt(1).data
+	}
+
+	switch token {
+	case "SPUSH":
+		if item == "" {
+			fmt.Println("Can't push empty string")
+			return
+		}
+		toWork.push(item)
+	case "SPOP":
+		toWork.pop()
+	case "SPRINT":
+		toWork.print()
+	default:
+		fmt.Println("No such a command")
+	}
+
+	writeFile, err := os.Create(path)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer writeFile.Close()
+
+	for curr := toWork.head; curr != nil; curr = curr.next {
+		fmt.Fprintln(writeFile, curr.data)
+	}
+}
+
+type Queue struct {
+	head *ONode
+	tail *ONode
+}
+
+func (q *Queue) isEmpty() bool {
+	return q.head == nil
+}
+
+func (q *Queue) push(value string) {
+	newElem := &ONode{data: value}
+	if q.isEmpty() {
+		q.head = newElem
+		q.tail = newElem
+	} else {
+		q.tail.next = newElem
+		q.tail = newElem
+	}
+}
+
+func (q *Queue) pop() {
+	if q.isEmpty() {
+		fmt.Println("Queue is empty")
+		return
+	}
+	fmt.Println("Popped value:", q.head.data)
+	q.head = q.head.next
+}
+
+func (q *Queue) print() {
+	curr := q.head
+	for curr.next != nil {
+		fmt.Print(curr.data, "<-")
+		curr = curr.next
+	}
+	fmt.Println(curr.data)
+}
+
+func queueDo(path string, query OList) {
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	toWork := Queue{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		toWork.push(scanner.Text())
+	}
+
+	token := query.findAt(0).data
+	item := ""
+	if query.size == 2 {
+		item = query.findAt(1).data
+	}
+
+	switch token {
+	case "QPUSH":
+		if item == "" {
+			fmt.Println("Can't push empty string")
+			return
+		}
+		toWork.push(item)
+	case "QPOP":
+		toWork.pop()
+	case "QPRINT":
+		toWork.print()
+	default:
+		fmt.Println("No such a command")
+	}
+
+	writeFile, err := os.Create(path)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer writeFile.Close()
+
+	for curr := toWork.head; curr != nil; curr = curr.next {
+		fmt.Fprintln(writeFile, curr.data)
+	}
+}
+
+type Array struct {
+	data     []string
+	size     int
+	capacity int
+}
+
+func (a *Array) pushBack(element string) {
+	if a.size == a.capacity {
+		a.capacity *= 2
+		newData := make([]string, a.capacity)
+		copy(newData, a.data)
+		a.data = newData
+	}
+	a.data[a.size] = element
+	a.size++
+}
+
+func (a *Array) insertAt(index int, element string) error {
+	if index < 0 || index > a.size {
+		return errors.New("Index out of range")
+	}
+	if a.size == a.capacity {
+		a.capacity *= 2
+		newData := make([]string, a.capacity)
+		copy(newData, a.data)
+		a.data = newData
+	}
+	for i := a.size; i > index; i-- {
+		a.data[i] = a.data[i-1]
+	}
+	a.data[index] = element
+	a.size++
+	return nil
+}
+
+func (a *Array) getAt(index int) (string, error) {
+	if index < 0 || index >= a.size {
+		return "", errors.New("Index out of range")
+	}
+	return a.data[index], nil
+}
+
+func (a *Array) removeAt(index int) error {
+	if index < 0 || index >= a.size {
+		return errors.New("Index out of range")
+	}
+	for i := index; i < a.size-1; i++ {
+		a.data[i] = a.data[i+1]
+	}
+	a.size--
+	return nil
+}
+
+func (a *Array) setAt(index int, element string) error {
+	if index < 0 || index >= a.size {
+		return errors.New("Index out of range")
+	}
+	a.data[index] = element
+	return nil
+}
+
+func (a *Array) print() {
+	for i := 0; i < a.size; i++ {
+		fmt.Print(a.data[i], " ")
+	}
+	fmt.Println()
+}
+
+func arrayDo(path string, query OList) {
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	toWork := Array{capacity: 10}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		toWork.pushBack(scanner.Text())
+	}
+
+	token := query.findAt(0).data
+	item := ""
+	index := -1
+	if query.size == 2 {
+		item = query.findAt(1).data
+	} else if query.size == 3 {
+		index, _ = strconv.Atoi(query.findAt(1).data)
+		item = query.findAt(2).data
+	}
+
+	switch token {
+	case "MPUSHB":
+		if item == "" {
+			fmt.Println("Can't push empty string")
+			return
+		}
+		toWork.pushBack(item)
+	case "MREPLACE":
+		if item == "" {
+			fmt.Println("Can't set empty string")
+			return
+		}
+		err := toWork.setAt(index, item)
+		if err != nil {
+			fmt.Println(err)
+		}
+	case "MGET":
+		if item == "" {
+			fmt.Println("Can't find element without index")
+			return
+		}
+		index, _ = strconv.Atoi(item)
+		value, err := toWork.getAt(index)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println("Got item:", value)
+		}
+	case "MDEL":
+		if item == "" {
+			fmt.Println("Can't find element without index")
+			return
+		}
+		index, _ = strconv.Atoi(item)
+		err := toWork.removeAt(index)
+		if err != nil {
+			fmt.Println(err)
+		}
+	case "MLENGTH":
+		fmt.Println(toWork.size)
+	case "MPRINT":
+		toWork.print()
+	default:
+		fmt.Println("No such a command")
+	}
+
+	writeFile, err := os.Create(path)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer writeFile.Close()
+
+	for i := 0; i < toWork.size; i++ {
+		fmt.Fprintln(writeFile, toWork.data[i])
+	}
+}
+
+type HashBucket struct {
+	key      int
+	data     OList
+	nextBucket *HashBucket
+}
+
+type HashTable struct {
+	first *HashBucket
+	last  *HashBucket
+}
+
+func (ht *HashTable) add(key int) {
+	newBucket := &HashBucket{key: key}
+	if ht.first == nil {
+		ht.first = newBucket
+		ht.last = newBucket
+	} else {
+		ht.last.nextBucket = newBucket
+		ht.last = newBucket
+	}
+}
+
+func (ht *HashTable) hash(value string) int {
+	sum := 0
+	for _, ch := range value {
+		sum += int(ch)
+	}
+	return sum % 30
+}
+
+func (ht *HashTable) set(value string) {
+	valKey := ht.hash(value)
+	currBucket := ht.first
+	for i := 0; i < valKey; i++ {
+		currBucket = currBucket.nextBucket
+	}
+	currBucket.data.pushBack(value)
+}
+
+func (ht *HashTable) getValues(key int) OList {
+	if key < 0 || key >= 30 {
+		fmt.Println("No such a key")
+		return OList{}
+	}
+	currBucket := ht.first
+	for i := 0; i < key; i++ {
+		currBucket = currBucket.nextBucket
+	}
+	return currBucket.data
+}
+
+func (ht *HashTable) deleteValue(value string) {
+	valKey := ht.hash(value)
+	currBucket := ht.first
+	for i := 0; i < valKey; i++ {
+		currBucket = currBucket.nextBucket
+	}
+	currBucket.data.deleteValue(value)
+}
+
+func (ht *HashTable) print() {
+	currBucket := ht.first
+	for i := 0; i < 30; i++ {
+		fmt.Print(i, ": ")
+		currBucket.data.print(", ")
+		currBucket = currBucket.nextBucket
+	}
+	fmt.Println()
+}
+
+func hashDo(path string, query OList) {
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	toWork := HashTable{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		splited := split(scanner.Text(), ",")
+		for curr := splited.first; curr != nil; curr = curr.next {
+			toWork.set(curr.data)
+		}
+	}
+
+	token := query.findAt(0).data
+	item := ""
+	if query.size == 2 {
+		item = query.findAt(1).data
+	}
+
+	switch token {
+	case "HSET":
+		toWork.set(item)
+	case "HGET":
+		if item == "" {
+			fmt.Println("Can't get items with no index")
+			return
+		}
+		index, _ := strconv.Atoi(item)
+		fmt.Print("Got items: ")
+		toWork.getValues(index).print(" ")
+	case "HDEL":
+		if item == "" {
+			fmt.Println("Can't delete empty value")
+			return
+		}
+		toWork.deleteValue(item)
+	case "HPRINT":
+		toWork.print()
+	default:
+		fmt.Println("No such a command")
+	}
+
+	writeFile, err := os.Create(path)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer writeFile.Close()
+
+	for curr := toWork.first; curr != nil; curr = curr.nextBucket {
+		fmt.Fprintln(writeFile, curr.data.join(','))
+	}
+}
+
+type TreeNode struct {
+	key    string
+	left   *TreeNode
+	right  *TreeNode
+	height int
+}
+
+type AVLTree struct {
+	root *TreeNode
+}
+
+func (avl *AVLTree) insert(key string) {
+	avl.root = avl.insertNode(avl.root, key)
+}
+
+func (avl *AVLTree) search(key string) bool {
+	return avl.searchNode(avl.root, key)
+}
+
+func (avl *AVLTree) remove(key string) {
+	avl.root = avl.removeNode(avl.root, key)
+}
+
+func (avl *AVLTree) print() {
+	avl.printNode(avl.root, 0)
+}
+
+func (avl *AVLTree) getHeight(node *TreeNode) int {
+	if node == nil {
+		return 0
+	}
+	return node.height
+}
+
+func (avl *AVLTree) minValueNode(node *TreeNode) *TreeNode {
+	current := node
+	for current != nil && current.left != nil {
+		current = current.left
+	}
+	return current
+}
+
+func (avl *AVLTree) getBalance(node *TreeNode) int {
+	if node == nil {
+		return 0
+	}
+	return avl.getHeight(node.left) - avl.getHeight(node.right)
+}
+
+func (avl *AVLTree) insertNode(node *TreeNode, key string) *TreeNode {
+	if node == nil {
+		return &TreeNode{key: key, height: 1}
+	}
+	if key < node.key {
+		node.left = avl.insertNode(node.left, key)
+	} else if key > node.key {
+		node.right = avl.insertNode(node.right, key)
+	} else {
+		return node
+	}
+
+	node.height = max(avl.getHeight(node.left), avl.getHeight(node.right)) + 1
+
+	balance := avl.getBalance(node)
+	if balance > 1 {
+		if key < node.left.key {
+			return avl.rotateRight(node)
+		} else {
+			node.left = avl.rotateLeft(node.left)
+			return avl.rotateRight(node)
+		}
+	}
+	if balance < -1 {
+		if key > node.right.key {
+			return avl.rotateLeft(node)
+		} else {
+			node.right = avl.rotateRight(node.right)
+			return avl.rotateLeft(node)
+		}
+	}
+
+	return node
+}
+
+func (avl *AVLTree) searchNode(node *TreeNode, key string) bool {
+	if node == nil {
+		return false
+	}
+	if key < node.key {
+		return avl.searchNode(node.left, key)
+	} else if key > node.key {
+		return avl.searchNode(node.right, key)
+	} else {
+		return true
+	}
+}
+
+func removeNode(node *TreeNode, key string) *TreeNode {
+	if node == nil {
+		return node
+	}
+	if key < node.key {
+		node.left = removeNode(node.left, key)
+	} else if key > node.key {
+		node.right = removeNode(node.right, key)
+	} else {
+		if node.left == nil {
+			temp := node.right
+			node = nil
+			return temp
+		} else if node.right == nil {
+			temp := node.left
+			node = nil
+			return temp
+		}
+
+		temp := minValueNode(node.right)
+		node.key = temp.key
+		node.right = removeNode(node.right, temp.key)
+	}
+
+	node.height = int(math.Max(float64(getHeight(node.left)), float64(getHeight(node.right)))) + 1
+
+	balance := getBalance(node)
+	if balance > 1 {
+		if getBalance(node.left) >= 0 {
+			return rotateRight(node)
+		} else {
+			node.left = rotateLeft(node.left)
+			return rotateRight(node)
+		}
+	}
+	if balance < -1 {
+		if getBalance(node.right) <= 0 {
+			return rotateLeft(node)
+		} else {
+			node.right = rotateRight(node.right)
+			return rotateLeft(node)
+		}
+	}
+
+	return node
+}
+
+func printNode(node *TreeNode, level int) {
+	if node == nil {
+		return
+	}
+
+	printNode(node.right, level+1)
+
+	for i := 0; i < level; i++ {
+		fmt.Print("\t")
+	}
+
+	fmt.Println("|")
+
+	for i := 0; i < level; i++ {
+		fmt.Print("\t")
+	}
+
+	fmt.Printf("--%s (h=%d)\n", node.key, node.height)
+
+	printNode(node.left, level+1)
+}
+
+func rotateRight(node *TreeNode) *TreeNode {
+	temp := node.left
+	node.left = temp.right
+	temp.right = node
+
+	node.height = int(math.Max(float64(getHeight(node.left)), float64(getHeight(node.right)))) + 1
+	temp.height = int(math.Max(float64(getHeight(temp.left)), float64(getHeight(temp.right)))) + 1
+
+	return temp
+}
+
+func rotateLeft(node *TreeNode) *TreeNode {
+	rtTemp := node.right
+	temp := rtTemp.left
+
+	rtTemp.left = node
+	node.right = temp
+
+	node.height = int(math.Max(float64(getHeight(node.left)), float64(getHeight(node.right)))) + 1
+	rtTemp.height = int(math.Max(float64(getHeight(rtTemp.left)), float64(getHeight(rtTemp.right)))) + 1
+
+	return rtTemp
+}
+
+func toStringTree(tree *AVLTree) string {
+	if tree == nil || tree.root == nil {
+		return ""
+	}
+
+	return toStringNode(tree.root)
+}
+
+func toStringNode(node *TreeNode) string {
+	if node == nil {
+		return ""
+	}
+
+	result := node.key + " "
+	result += toStringNode(node.left)
+	result += toStringNode(node.right)
+	return result
+}
+
+func treeDo(path string, query []string) {
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	toWork := &AVLTree{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		splited := strings.Split(line, " ")
+		for _, item := range splited {
+			toWork.insert(item)
+		}
+	}
+
+	token := query[0]
+	var item string
+	if len(query) == 2 {
+		item = query[1]
+	}
+
+	switch token {
+	case "TINSERT":
+		if item == "" {
+			fmt.Println("Can't insert empty value")
+			return
+		}
+		toWork.insert(item)
+	case "TGET":
+		if item == "" {
+			fmt.Println("Can't search empty value")
+			return
+		}
+		toWork.search(item)
+	case "TDEL":
+		if item == "" {
+			fmt.Println("Can't delete empty value")
+			return
+		}
+		toWork.remove(item)
+	case "TPRINT":
+		toWork.print()
+	default:
+		fmt.Println("No such a command")
+	}
+
+	stringed := toStringTree(toWork)
+	err = os.WriteFile(path, []byte(stringed), 0644)
+	if err != nil {
+		fmt.Println("Error writing to file:", err)
+	}
+}
+
+func main() {
+	var file, query string
+
+	fmt.Print("Введите файл: ")
+    reader := bufio.NewReader(os.Stdin)
+    file, _ = reader.ReadString('\n')
+    file = file[:len(file)-1]
+
+    fmt.Print("Введите запрос: ")
+    reader = bufio.NewReader(os.Stdin)
+    query, _ = reader.ReadString('\n')
+    query = query[:len(query)-1]
+
+	if file == "" {
+		fmt.Println("You must write filename")
+		os.Exit(1)
+	}
+	if query == "" {
+		fmt.Println("You can't write empty command")
+		os.Exit(1)
+	}
+
+	path := "files/" + file
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		fmt.Println("No such a file")
+		os.Exit(1)
+	}
+
+	splited := strings.Split(query, " ")
+	structToken := splited[0][0]
+	switch structToken {
+	case 'O':
+		olistDo(path, splited)
+	case 'D':
+		tlistDo(path, splited)
+	case 'S':
+		stackDo(path, splited)
+	case 'Q':
+		queueDo(path, splited)
+	case 'M':
+		arrayDo(path, splited)
+	case 'H':
+		hashDo(path, splited)
+	case 'T':
+		treeDo(path, splited)
+	default:
+		fmt.Println("Wrong token")
+	}
+}
