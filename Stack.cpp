@@ -50,8 +50,6 @@ void stack_do(const string& path, OList& query){
     }
     readFile.close();
 
-    toWork.print();
-
     string token = query.find_at(0)->data;
     string item = "";
     if (query.size == 2){
