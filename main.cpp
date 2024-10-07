@@ -8,8 +8,6 @@
 #include "AVLTree.h"
 #include <getopt.h>
 
-
-
 int main(int argc, char* argv[])
 {
     int c;
